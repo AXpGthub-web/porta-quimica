@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Portal de Química</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#051838;
+    --navy-light:#12275c;
+    --navy-tint:#eef1f7;
+    --gold:#c9a84c;
+    --gold-pale:#f3e8c8;
+    --gold-dim:#a68a3a;
+    --paper:#fbfaf7;
+    --ink:#14151a;
+    --ink-soft:#565a66;
+    --line:#e3ddc9;
+    --success:#3f7d5c;
+    --success-bg:#e8f1ec;
+    --warn:#a3462f;
+    --warn-bg:#f6e9e5;
+    --mid:#b58a2b;
+    --mid-bg:#f7efd9;
+    --radius:2px;
+    --font-display:'Fraunces', serif;
+    --font-body:'Inter', sans-serif;
+    --font-mono:'JetBrains Mono', monospace;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:var(--font-body);
+    -webkit-font-smoothing:antialiased;
+    min-height:100vh;
+  }
+  ::selection{background:var(--gold-pale);}
+  button{font-family:inherit;cursor:pointer;}
+  input,select,textarea{font-family:inherit;}
+  a{color:var(--navy);}
+
+  /* ---------- layout shells ---------- */
+  #app{min-height:100vh;display:flex;flex-direction:column;}
+
+  .topbar{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:18px 32px;
+    background:var(--navy);
+    color:#fff;
+    border-bottom:3px solid var(--gold);
+  }
+  .brand{display:flex;align-items:center;gap:14px;}
+  .brand-tile{
+    width:44px;height:44px;
+    border:1.5px solid var(--gold);
+    border-radius:var(--radius);
+    display:flex;flex-direction:column;
+    align-items:center;justify-content:center;
+    background:var(--navy-light);
+    line-height:1;
+    position:relative;
+  }
+  .brand-tile .sym{font-family:var(--font-display);font-weight:600;font-size:17px;color:var(--gold);}
+  .brand-tile .num{position:absolute;top:2px;left:4px;font-family:var(--font-mono);font-size:7px;color:var(--gold-pale);opacity:.8;}
+  .brand-name{font-family:var(--font-display);font-size:19px;font-weight:600;letter-spacing:.01em;}
+  .brand-sub{font-family:var(--font-mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold-pale);opacity:.85;margin-top:1px;}
+  .who{display:flex;align-items:center;gap:14px;font-size:13.5px;}
+  .who .name{font-weight:600;}
+  .who .tag{font-family:var(--font-mono);font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--gold-pale);border:1px solid rgba(201,168,76,.5);padding:2px 7px;border-radius:20px;}
+  .btn-ghost-light{
+    background:transparent;border:1px solid rgba(255,255,255,.35);color:#fff;
+    padding:7px 14px;border-radius:20px;font-size:12.5px;font-weight:500;
+    transition:border-color .15s, background .15s;
+  }
+  .btn-ghost-light:hover{border-color:#fff;background:rgba(255,255,255,.06);}
+
+  main{flex:1;width:100%;}
+
+  /* ---------- login screen ---------- */
+  .login-wrap{
+    display:grid;grid-template-columns:1fr 1fr;
+    min-height:calc(100vh - 78px);
+  }
+  @media (max-width:860px){ .login-wrap{grid-template-columns:1fr;} .login-hero{display:none;} }
+  .login-hero{
+    background:var(--navy);
+    color:#fff;
+    padding:64px;
+    display:flex;flex-direction:column;justify-content:center;
+    position:relative;
+    overflow:hidden;
+  }
+  .login-hero::before{
+    content:'';
+    position:absolute;inset:0;
+    background-image:
+      linear-gradient(rgba(201,168,76,.10) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(201,168,76,.10) 1px, transparent 1px);
+    background-size:38px 38px;
+    mask-image:radial-gradient(circle at 30% 40%, black, transparent 75%);
+  }
+  .hero-eyebrow{font-family:var(--font-mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);margin-bottom:18px;position:relative;}
+  .hero-title{font-family:var(--font-display);font-size:44px;line-height:1.08;font-weight:600;margin:0 0 18px;position:relative;}
+  .hero-title em{color:var(--gold);font-style:normal;}
+  .hero-text{font-size:15px;line-height:1.6;color:#c9d2e6;max-width:380px;position:relative;}
+  .hero-grid{display:flex;gap:10px;margin-top:40px;position:relative;flex-wrap:wrap;}
+  .mini-tile{
+    width:52px;height:52px;border:1px solid rgba(201,168,76,.4);border-radius:var(--radius);
+    display:flex;align-items:center;justify-content:center;
+    font-family:var(--font-display);font-weight:600;font-size:16px;color:var(--gold-pale);
+    background:rgba(255,255,255,.03);
+  }
+
+  .login-panel{
+    display:flex;flex-direction:column;justify-content:center;
+    padding:48px;
+  }
+  .login-card{max-width:400px;width:100%;margin:0 auto;}
+  .tabs{display:flex;border-bottom:1px solid var(--line);margin-bottom:28px;}
+  .tab{
+    flex:1;text-align:center;padding:12px 0;font-size:13.5px;font-weight:600;
+    color:var(--ink-soft);border-bottom:2px solid transparent;margin-bottom:-1px;
+    transition:color .15s, border-color .15s;background:none;border-left:none;border-right:none;border-top:none;
+  }
+  .tab.active{color:var(--navy);border-bottom-color:var(--gold);}
+  .field{margin-bottom:16px;}
+  .field label{display:block;font-size:12px;font-weight:600;color:var(--ink-soft);margin-bottom:6px;text-transform:uppercase;letter-spacing:.04em;}
+  .field input,.field select{
+    width:100%;padding:11px 13px;border:1px solid var(--line);border-radius:var(--radius);
+    font-size:14.5px;background:#fff;color:var(--ink);
+  }
+  .field input:focus,.field select:focus,.field textarea:focus{outline:2px solid var(--gold);outline-offset:0;border-color:var(--gold);}
+  .btn-primary{
+    width:100%;padding:12px 18px;background:var(--navy);color:#fff;border:none;border-radius:var(--radius);
+    font-size:14px;font-weight:600;letter-spacing:.01em;transition:background .15s;
+  }
+  .btn-primary:hover{background:var(--navy-light);}
+  .btn-primary:disabled{opacity:.5;cursor:default;}
+  .form-note{font-size:12.5px;color:var(--ink-soft);margin-top:14px;line-height:1.5;}
+  .error-msg{background:var(--warn-bg);color:var(--warn);font-size:13px;padding:10px 13px;border-radius:var(--radius);margin-bottom:14px;border:1px solid rgba(163,70,47,.25);}
+  .empty-note{font-size:13px;color:var(--ink-soft);background:var(--navy-tint);padding:10px 13px;border-radius:var(--radius);margin-top:10px;}
+
+  /* ---------- dashboard shells ---------- */
+  .dash{max-width:1080px;margin:0 auto;padding:36px 28px 80px;}
+  .dash-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:10px;}
+  .dash-title{font-family:var(--font-display);font-size:28px;font-weight:600;color:var(--navy);}
+  .dash-lead{font-size:14px;color:var(--ink-soft);margin-bottom:30px;}
+
+  .nav-tabs{display:flex;gap:6px;border-bottom:1px solid var(--line);margin-bottom:28px;flex-wrap:wrap;}
+  .nav-tab{
+    padding:10px 16px;font-size:13px;font-weight:600;color:var(--ink-soft);
+    border:none;background:none;border-bottom:2px solid transparent;margin-bottom:-1px;
+  }
+  .nav-tab.active{color:var(--navy);border-bottom-color:var(--gold);}
+  .nav-tab:hover{color:var(--navy);}
+
+  .card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:24px;margin-bottom:20px;}
+  .card-title{font-family:var(--font-display);font-size:18px;font-weight:600;color:var(--navy);margin:0 0 4px;}
+  .card-sub{font-size:12.5px;color:var(--ink-soft);margin-bottom:18px;}
+
+  .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+  @media (max-width:700px){.grid-2,.grid-3{grid-template-columns:1fr;}}
+
+  table{width:100%;border-collapse:collapse;font-size:13.5px;}
+  th{
+    text-align:left;font-family:var(--font-mono);font-size:10.5px;text-transform:uppercase;letter-spacing:.08em;
+    color:var(--ink-soft);padding:9px 10px;border-bottom:1px solid var(--line);font-weight:600;
+  }
+  td{padding:11px 10px;border-bottom:1px solid #f0ede2;vertical-align:middle;}
+  tr:last-child td{border-bottom:none;}
+  .num-cell{font-family:var(--font-mono);}
+
+  .pill{
+    display:inline-block;padding:3px 10px;border-radius:20px;font-size:11.5px;font-weight:600;
+    font-family:var(--font-mono);
+  }
+  .pill-success{background:var(--success-bg);color:var(--success);}
+  .pill-mid{background:var(--mid-bg);color:var(--mid);}
+  .pill-warn{background:var(--warn-bg);color:var(--warn);}
+
+  .bar-track{width:100%;height:7px;background:var(--navy-tint);border-radius:20px;overflow:hidden;}
+  .bar-fill{height:100%;border-radius:20px;}
+
+  .btn-sm{
+    padding:6px 12px;border-radius:var(--radius);font-size:12px;font-weight:600;border:1px solid var(--line);
+    background:#fff;color:var(--navy);
+  }
+  .btn-sm:hover{border-color:var(--navy);}
+  .btn-sm.danger{color:var(--warn);}
+  .btn-sm.danger:hover{border-color:var(--warn);}
+  .btn-gold{
+    padding:10px 18px;border-radius:var(--radius);font-size:13.5px;font-weight:600;border:1px solid var(--gold-dim);
+    background:var(--gold);color:var(--navy);
+  }
+  .btn-gold:hover{background:var(--gold-dim);}
+  .btn-gold:disabled{opacity:.5;cursor:default;}
+
+  .element-badge{
+    width:34px;height:34px;border:1px solid var(--gold-dim);border-radius:var(--radius);
+    display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-weight:600;
+    font-size:13px;color:var(--navy);background:var(--gold-pale);flex-shrink:0;
+  }
+
+  .activity-item{border:1px solid var(--line);border-radius:var(--radius);padding:18px;margin-bottom:14px;}
+  .activity-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:8px;}
+  .activity-title{font-family:var(--font-display);font-size:16.5px;font-weight:600;color:var(--navy);}
+  .activity-meta{font-family:var(--font-mono);font-size:11px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.05em;}
+  .activity-desc{font-size:13.5px;color:var(--ink-soft);line-height:1.55;margin:8px 0 14px;white-space:pre-wrap;}
+  .submit-box{border-top:1px dashed var(--line);padding-top:14px;margin-top:6px;}
+  .submitted-tag{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--success);font-weight:600;margin-bottom:10px;}
+  .submitted-tag .dot{width:6px;height:6px;border-radius:50%;background:var(--success);}
+
+  textarea{
+    width:100%;min-height:80px;padding:11px 13px;border:1px solid var(--line);border-radius:var(--radius);
+    font-size:13.5px;resize:vertical;background:#fff;color:var(--ink);
+  }
+
+  .file-row{display:flex;align-items:center;gap:10px;font-size:12.5px;color:var(--ink-soft);margin-top:8px;}
+  .file-row input[type=file]{font-size:12px;}
+
+  .toast{
+    position:fixed;bottom:24px;right:24px;background:var(--navy);color:#fff;padding:12px 18px;border-radius:var(--radius);
+    font-size:13px;border-left:3px solid var(--gold);box-shadow:0 8px 24px rgba(5,24,56,.25);z-index:50;
+    max-width:320px;
+  }
+  .loading{padding:60px;text-align:center;color:var(--ink-soft);font-size:13.5px;font-family:var(--font-mono);}
+  .subgrid-title{font-family:var(--font-mono);font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-soft);margin:22px 0 10px;}
+  .divider{border:none;border-top:1px solid var(--line);margin:22px 0;}
+  .stat-num{font-family:var(--font-display);font-size:30px;font-weight:600;color:var(--navy);}
+  .stat-label{font-size:11.5px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.06em;font-family:var(--font-mono);}
+  .link-btn{background:none;border:none;color:var(--navy);font-weight:600;font-size:12.5px;text-decoration:underline;padding:0;}
+</style>
+</head>
+<body>
+<div id="app"><div class="loading">Carregando portal…</div></div>
+
+<script>
+(function(){
+  "use strict";
+
+  const TEACHER_PASSWORD = "09313446545";
+
+  const S = {
+    view: 'loading',        // loading | login | student | teacher
+    loginTab: 'aluno',
+    session: null,          // {role:'aluno', alunoId} or {role:'professor'}
+    alunos: [],
+    notas: {},              // alunoId -> [{id,avaliacao,nota,data,obs}]
+    atividades: [],         // [{id,titulo,descricao,prazo,dataPublicacao}]
+    envios: [],             // [{id,atividadeId,alunoId,texto,arquivoNome,arquivoDados,dataEnvio}]
+    teacherTab: 'alunos',
+    toast: null,
+    loginError: '',
+    selectedAlunoId: null,
+    busy:false
+  };
+
+  function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,8); }
+  function showToast(msg){ S.toast=msg; render(); setTimeout(()=>{S.toast=null; render();}, 2600); }
+  function fmtDate(d){
+    if(!d) return '—';
+    const dt = new Date(d+'T00:00:00');
+    if(isNaN(dt)) return d;
+    return dt.toLocaleDateString('pt-BR');
+  }
+  function esc(s){ return (s||'').replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+  // ---------- storage ----------
+  async function loadAll(){
+    try{
+      S.alunos = JSON.parse(localStorage.getItem('alunos') || '[]');
+      S.notas = JSON.parse(localStorage.getItem('notas') || '{}');
+      S.atividades = JSON.parse(localStorage.getItem('atividades') || '[]');
+      S.envios = JSON.parse(localStorage.getItem('envios') || '[]');
+    }catch(e){
+      console.error('Erro ao carregar dados', e);
+    }
+    S.view='login';
+    render();
+  }
+  async function saveAlunos(){ localStorage.setItem('alunos', JSON.stringify(S.alunos)); }
+  async function saveNotas(){ localStorage.setItem('notas', JSON.stringify(S.notas)); }
+  async function saveAtividades(){ localStorage.setItem('atividades', JSON.stringify(S.atividades)); }
+  async function saveEnvios(){ localStorage.setItem('envios', JSON.stringify(S.envios)); }
+
+  // ---------- derived ----------
+  function notasDoAluno(id){ return (S.notas[id]||[]).slice().sort((a,b)=>a.data<b.data?1:-1); }
+  function mediaDoAluno(id){
+    const arr = S.notas[id]||[];
+    if(!arr.length) return null;
+    return arr.reduce((s,n)=>s+Number(n.nota),0)/arr.length;
+  }
+  function pillForMedia(m){
+    if(m===null) return {cls:'pill-mid', label:'sem notas'};
+    if(m>=7) return {cls:'pill-success', label:m.toFixed(1)};
+    if(m>=5) return {cls:'pill-mid', label:m.toFixed(1)};
+    return {cls:'pill-warn', label:m.toFixed(1)};
+  }
+  function barColor(m){
+    if(m===null) return 'var(--line)';
+    if(m>=7) return 'var(--success)';
+    if(m>=5) return 'var(--mid)';
+    return 'var(--warn)';
+  }
+  function envioFor(atividadeId, alunoId){
+    return S.envios.find(e=>e.atividadeId===atividadeId && e.alunoId===alunoId);
+  }
+
+  // ---------- render root ----------
+  function render(){
+    const app = document.getElementById('app');
+    if(S.view==='loading'){ app.innerHTML = '<div class="loading">Carregando portal…</div>'; return; }
+    if(S.view==='login'){ app.innerHTML = topbar(false) + loginScreen(); attachLoginHandlers(); return; }
+    if(S.session && S.session.role==='aluno'){ app.innerHTML = topbar(true) + studentScreen(); attachStudentHandlers(); return; }
+    if(S.session && S.session.role==='professor'){ app.innerHTML = topbar(true) + teacherScreen(); attachTeacherHandlers(); return; }
+    if(S.toast) renderToast();
+  }
+  function renderToast(){
+    const existing = document.querySelector('.toast');
+    if(existing) existing.remove();
+    if(!S.toast) return;
+    const t = document.createElement('div');
+    t.className='toast';
+    t.textContent = S.toast;
+    document.body.appendChild(t);
+  }
+
+  function topbar(loggedIn){
+    let who = '';
+    if(loggedIn && S.session.role==='aluno'){
+      const a = S.alunos.find(x=>x.id===S.session.alunoId);
+      who = `<div class="who"><span class="tag">Aluno(a)</span><span class="name">${esc(a?a.nome:'')}</span><button class="btn-ghost-light" id="btn-logout">Sair</button></div>`;
+    } else if(loggedIn && S.session.role==='professor'){
+      who = `<div class="who"><span class="tag">Professor(a)</span><button class="btn-ghost-light" id="btn-logout">Sair</button></div>`;
+    }
+    return `
+    <div class="topbar">
+      <div class="brand">
+        <div class="brand-tile"><span class="num">54</span><span class="sym">Qm</span></div>
+        <div>
+          <div class="brand-name">Portal de Química</div>
+          <div class="brand-sub">CAPROV · ENEM 2026</div>
+        </div>
+      </div>
+      ${who}
+    </div>`;
+  }
+
+  // ---------- login ----------
+  function loginScreen(){
+    const tabAluno = S.loginTab==='aluno';
+    return `
+    <main>
+      <div class="login-wrap">
+        <div class="login-hero">
+          <div class="hero-eyebrow">Acompanhamento · ENEM 2026</div>
+          <h1 class="hero-title">Da tabela<br><em>periódica</em><br>ao seu boletim.</h1>
+          <p class="hero-text">Acompanhe suas avaliações, receba atividades e envie suas respostas em um só lugar — pensado para a rotina de quem estuda para o ENEM.</p>
+          <div class="hero-grid">
+            ${['H','C','N','O','Na','Cl'].map(s=>`<div class="mini-tile">${s}</div>`).join('')}
+          </div>
+        </div>
+        <div class="login-panel">
+          <div class="login-card">
+            <div class="tabs">
+              <button class="tab ${tabAluno?'active':''}" data-tab="aluno">Sou aluno(a)</button>
+              <button class="tab ${!tabAluno?'active':''}" data-tab="professor">Sou professor(a)</button>
+            </div>
+            ${S.loginError?`<div class="error-msg">${esc(S.loginError)}</div>`:''}
+            ${tabAluno ? loginAlunoForm() : loginProfessorForm()}
+          </div>
+        </div>
+      </div>
+    </main>`;
+  }
+
+  function loginAlunoForm(){
+    if(!S.alunos.length){
+      return `<div class="empty-note">Ainda não há alunos cadastrados. Peça ao(à) professor(a) para fazer seu cadastro no portal.</div>`;
+    }
+    const options = S.alunos.slice().sort((a,b)=>a.nome.localeCompare(b.nome))
+      .map(a=>`<option value="${a.id}">${esc(a.nome)}</option>`).join('');
+    return `
+      <form id="form-login-aluno">
+        <div class="field">
+          <label>Seu nome</label>
+          <select id="aluno-select" required>
+            <option value="">Selecione…</option>
+            ${options}
+          </select>
+        </div>
+        <div class="field">
+          <label>Data de nascimento</label>
+          <input type="date" id="aluno-nasc" required>
+        </div>
+        <button class="btn-primary" type="submit">Entrar</button>
+        <div class="form-note">Use a data de nascimento cadastrada pelo(a) professor(a) para confirmar sua identidade.</div>
+      </form>`;
+  }
+  function loginProfessorForm(){
+    return `
+      <form id="form-login-professor">
+        <div class="field">
+          <label>Senha de acesso</label>
+          <input type="password" id="prof-senha" required autocomplete="current-password">
+        </div>
+        <button class="btn-primary" type="submit">Entrar</button>
+        <div class="form-note">Acesso restrito ao(à) professor(a) responsável pela turma.</div>
+      </form>`;
+  }
+
+  function attachLoginHandlers(){
+    document.querySelectorAll('.tab').forEach(t=>{
+      t.onclick = ()=>{ S.loginTab=t.dataset.tab; S.loginError=''; render(); };
+    });
+    const fa = document.getElementById('form-login-aluno');
+    if(fa) fa.onsubmit = (e)=>{
+      e.preventDefault();
+      const id = document.getElementById('aluno-select').value;
+      const nasc = document.getElementById('aluno-nasc').value;
+      const aluno = S.alunos.find(a=>a.id===id);
+      if(aluno && aluno.dataNascimento===nasc){
+        S.session = {role:'aluno', alunoId:id};
+        S.loginError='';
+        S.view='student';
+        render();
+      } else {
+        S.loginError = 'Nome e data de nascimento não conferem. Confira e tente novamente.';
+        render();
+      }
+    };
+    const fp = document.getElementById('form-login-professor');
+    if(fp) fp.onsubmit = (e)=>{
+      e.preventDefault();
+      const senha = document.getElementById('prof-senha').value;
+      if(senha === TEACHER_PASSWORD){
+        S.session = {role:'professor'};
+        S.loginError='';
+        S.view='teacher';
+        render();
+      } else {
+        S.loginError = 'Senha incorreta.';
+        render();
+      }
+    };
+  }
+
+  function logout(){ S.session=null; S.view='login'; S.loginTab='aluno'; S.teacherTab='alunos'; S.selectedAlunoId=null; render(); }
+
+  // ---------- student screen ----------
+  function studentScreen(){
+    const a = S.alunos.find(x=>x.id===S.session.alunoId);
+    if(!a) return `<div class="dash"><p>Cadastro não encontrado.</p></div>`;
+    const notas = notasDoAluno(a.id);
+    const media = mediaDoAluno(a.id);
+    const pill = pillForMedia(media);
+
+    return `
+    <main><div class="dash">
+      <div class="dash-head"><div class="dash-title">Olá, ${esc(a.nome.split(' ')[0])}</div></div>
+      <div class="dash-lead">Seu progresso e as atividades da turma de Química.</div>
+
+      <div class="grid-3">
+        <div class="card">
+          <div class="stat-num">${media===null?'—':media.toFixed(1)}</div>
+          <div class="stat-label">Média geral</div>
+        </div>
+        <div class="card">
+          <div class="stat-num">${notas.length}</div>
+          <div class="stat-label">Avaliações lançadas</div>
+        </div>
+        <div class="card">
+          <div class="stat-num">${S.atividades.length}</div>
+          <div class="stat-label">Atividades publicadas</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Suas avaliações</div>
+        <div class="card-sub">Notas lançadas pelo(a) professor(a), da mais recente para a mais antiga.</div>
+        ${notas.length ? `
+        <table>
+          <thead><tr><th>Avaliação</th><th>Data</th><th>Nota</th><th>Observação</th></tr></thead>
+          <tbody>
+            ${notas.map(n=>`<tr>
+              <td>${esc(n.avaliacao)}</td>
+              <td class="num-cell">${fmtDate(n.data)}</td>
+              <td><span class="pill ${pillForMedia(Number(n.nota)).cls}">${Number(n.nota).toFixed(1)}</span></td>
+              <td>${esc(n.obs||'—')}</td>
+            </tr>`).join('')}
+          </tbody>
+        </table>` : `<div class="empty-note">Nenhuma nota lançada até o momento.</div>`}
+        <div style="margin-top:16px;">
+          <div class="bar-track"><div class="bar-fill" style="width:${media===null?0:Math.min(media/10*100,100)}%;background:${barColor(media)}"></div></div>
+        </div>
+      </div>
+
+      <div class="subgrid-title">Atividades</div>
+      ${S.atividades.length ? S.atividades.slice().sort((x,y)=>y.dataPublicacao.localeCompare(x.dataPublicacao)).map(at=>{
+        const env = envioFor(at.id, a.id);
+        return `
+        <div class="activity-item">
+          <div class="activity-head">
+            <div>
+              <div class="activity-title">${esc(at.titulo)}</div>
+              <div class="activity-meta">Publicada em ${fmtDate(at.dataPublicacao)} ${at.prazo?('· prazo '+fmtDate(at.prazo)):''}</div>
+            </div>
+          </div>
+          <div class="activity-desc">${esc(at.descricao)}</div>
+          <div class="submit-box">
+            ${env ? `<div class="submitted-tag"><span class="dot"></span>Enviado em ${fmtDate(env.dataEnvio)}${env.arquivoNome?(' · '+esc(env.arquivoNome)):''}</div>` : ''}
+            <textarea placeholder="Escreva sua resposta ou observações aqui…" data-atividade="${at.id}" class="resposta-input">${env?esc(env.texto||''):''}</textarea>
+            <div class="file-row">
+              <input type="file" data-atividade="${at.id}" class="arquivo-input">
+              <span>${env&&env.arquivoNome?('Arquivo atual: '+esc(env.arquivoNome)):'Opcional · até 2MB'}</span>
+            </div>
+            <div style="margin-top:12px;">
+              <button class="btn-gold btn-enviar" data-atividade="${at.id}">${env?'Reenviar':'Enviar atividade'}</button>
+            </div>
+          </div>
+        </div>`;
+      }).join('') : `<div class="empty-note">Nenhuma atividade publicada até o momento.</div>`}
+    </div></main>`;
+  }
+
+  function attachStudentHandlers(){
+    const lo = document.getElementById('btn-logout'); if(lo) lo.onclick = logout;
+    document.querySelectorAll('.btn-enviar').forEach(btn=>{
+      btn.onclick = async ()=>{
+        const atId = btn.dataset.atividade;
+        const alunoId = S.session.alunoId;
+        const textarea = document.querySelector(`.resposta-input[data-atividade="${atId}"]`);
+        const fileInput = document.querySelector(`.arquivo-input[data-atividade="${atId}"]`);
+        const texto = textarea.value.trim();
+        const file = fileInput.files[0];
+
+        if(!texto && !file){ showToast('Escreva uma resposta ou anexe um arquivo antes de enviar.'); return; }
+        if(file && file.size > 2*1024*1024){ showToast('Arquivo muito grande. Envie um arquivo de até 2MB.'); return; }
+
+        btn.disabled = true; btn.textContent = 'Enviando…';
+        try{
+          let arquivoDados = null, arquivoNome = null;
+          if(file){
+            arquivoDados = await new Promise((res,rej)=>{
+              const r = new FileReader();
+              r.onload = ()=>res(r.result);
+              r.onerror = ()=>rej(new Error('Falha ao ler arquivo'));
+              r.readAsDataURL(file);
+            });
+            arquivoNome = file.name;
+          }
+          const existing = envioFor(atId, alunoId);
+          const entry = {
+            id: existing?existing.id:uid(),
+            atividadeId: atId,
+            alunoId: alunoId,
+            texto: texto,
+            arquivoNome: arquivoNome || (existing?existing.arquivoNome:null),
+            arquivoDados: arquivoDados || (existing?existing.arquivoDados:null),
+            dataEnvio: new Date().toISOString().slice(0,10)
+          };
+          if(existing){
+            S.envios = S.envios.map(e=>e.id===existing.id?entry:e);
+          } else {
+            S.envios.push(entry);
+          }
+          await saveEnvios();
+          showToast('Atividade enviada com sucesso.');
+          render();
+        }catch(e){
+          console.error(e);
+          showToast('Não foi possível enviar. Tente novamente.');
+          btn.disabled=false; btn.textContent='Enviar atividade';
+        }
+      };
+    });
+  }
+
+  // ---------- teacher screen ----------
+  function teacherScreen(){
+    return `
+    <main><div class="dash">
+      <div class="dash-head"><div class="dash-title">Painel do(a) professor(a)</div></div>
+      <div class="dash-lead">Cadastre alunos, lance notas e publique atividades da turma.</div>
+      <div class="nav-tabs">
+        <button class="nav-tab ${S.teacherTab==='alunos'?'active':''}" data-tt="alunos">Alunos</button>
+        <button class="nav-tab ${S.teacherTab==='notas'?'active':''}" data-tt="notas">Notas</button>
+        <button class="nav-tab ${S.teacherTab==='atividades'?'active':''}" data-tt="atividades">Atividades</button>
+        <button class="nav-tab ${S.teacherTab==='envios'?'active':''}" data-tt="envios">Envios</button>
+      </div>
+      ${S.teacherTab==='alunos'?tabAlunos():''}
+      ${S.teacherTab==='notas'?tabNotas():''}
+      ${S.teacherTab==='atividades'?tabAtividades():''}
+      ${S.teacherTab==='envios'?tabEnvios():''}
+    </div></main>`;
+  }
+
+  function tabAlunos(){
+    const sorted = S.alunos.slice().sort((a,b)=>a.nome.localeCompare(b.nome));
+    return `
+      <div class="card">
+        <div class="card-title">Cadastrar aluno(a)</div>
+        <div class="card-sub">A data de nascimento é usada pelo(a) aluno(a) para acessar seu progresso.</div>
+        <form id="form-novo-aluno">
+          <div class="grid-3">
+            <div class="field"><label>Nome completo</label><input type="text" id="na-nome" required></div>
+            <div class="field"><label>Data de nascimento</label><input type="date" id="na-nasc" required></div>
+            <div class="field"><label>Turma (opcional)</label><input type="text" id="na-turma" placeholder="Ex.: Turma A"></div>
+          </div>
+          <button class="btn-gold" type="submit">Cadastrar aluno(a)</button>
+        </form>
+      </div>
+      <div class="card">
+        <div class="card-title">Alunos cadastrados</div>
+        ${sorted.length?`
+        <table>
+          <thead><tr><th>Nome</th><th>Nascimento</th><th>Turma</th><th>Média</th><th></th></tr></thead>
+          <tbody>
+            ${sorted.map(a=>{
+              const m = mediaDoAluno(a.id); const p = pillForMedia(m);
+              return `<tr>
+                <td>${esc(a.nome)}</td>
+                <td class="num-cell">${fmtDate(a.dataNascimento)}</td>
+                <td>${esc(a.turma||'—')}</td>
+                <td><span class="pill ${p.cls}">${p.label}</span></td>
+                <td><button class="btn-sm danger" data-del-aluno="${a.id}">Remover</button></td>
+              </tr>`;
+            }).join('')}
+          </tbody>
+        </table>`:`<div class="empty-note">Nenhum aluno cadastrado ainda.</div>`}
+      </div>`;
+  }
+
+  function tabNotas(){
+    const sorted = S.alunos.slice().sort((a,b)=>a.nome.localeCompare(b.nome));
+    const sel = S.selectedAlunoId || (sorted[0]&&sorted[0].id) || '';
+    const notas = sel ? notasDoAluno(sel) : [];
+    return `
+      <div class="card">
+        <div class="card-title">Lançar nota</div>
+        <div class="card-sub">Selecione o(a) aluno(a) e registre uma nova avaliação.</div>
+        ${sorted.length?`
+        <form id="form-nova-nota">
+          <div class="grid-2">
+            <div class="field">
+              <label>Aluno(a)</label>
+              <select id="nn-aluno">
+                ${sorted.map(a=>`<option value="${a.id}" ${a.id===sel?'selected':''}>${esc(a.nome)}</option>`).join('')}
+              </select>
+            </div>
+            <div class="field"><label>Avaliação</label><input type="text" id="nn-avaliacao" placeholder="Ex.: Simulado 1" required></div>
+            <div class="field"><label>Nota (0 a 10)</label><input type="number" id="nn-nota" step="0.1" min="0" max="10" required></div>
+            <div class="field"><label>Data</label><input type="date" id="nn-data" required></div>
+          </div>
+          <div class="field"><label>Observação (opcional)</label><input type="text" id="nn-obs" placeholder="Comentário sobre o desempenho"></div>
+          <button class="btn-gold" type="submit">Lançar nota</button>
+        </form>
+        <hr class="divider">
+        <div class="card-sub" style="margin-bottom:8px;">Notas de ${esc((sorted.find(a=>a.id===sel)||{}).nome||'')}</div>
+        ${notas.length?`
+        <table>
+          <thead><tr><th>Avaliação</th><th>Data</th><th>Nota</th><th>Observação</th><th></th></tr></thead>
+          <tbody>
+            ${notas.map(n=>`<tr>
+              <td>${esc(n.avaliacao)}</td>
+              <td class="num-cell">${fmtDate(n.data)}</td>
+              <td class="num-cell">${Number(n.nota).toFixed(1)}</td>
+              <td>${esc(n.obs||'—')}</td>
+              <td><button class="btn-sm danger" data-del-nota="${n.id}" data-aluno="${sel}">Remover</button></td>
+            </tr>`).join('')}
+          </tbody>
+        </table>`:`<div class="empty-note">Nenhuma nota lançada para este(a) aluno(a).</div>`}
+        `:`<div class="empty-note">Cadastre um aluno antes de lançar notas.</div>`}
+      </div>`;
+  }
+
+  function tabAtividades(){
+    const sorted = S.atividades.slice().sort((a,b)=>b.dataPublicacao.localeCompare(a.dataPublicacao));
+    return `
+      <div class="card">
+        <div class="card-title">Publicar atividade</div>
+        <div class="card-sub">Fica visível para todos os alunos assim que publicada.</div>
+        <form id="form-nova-atividade">
+          <div class="field"><label>Título</label><input type="text" id="at-titulo" required></div>
+          <div class="field"><label>Descrição / enunciado</label><textarea id="at-desc" required></textarea></div>
+          <div class="field"><label>Prazo de entrega (opcional)</label><input type="date" id="at-prazo"></div>
+          <button class="btn-gold" type="submit">Publicar atividade</button>
+        </form>
+      </div>
+      <div class="card">
+        <div class="card-title">Atividades publicadas</div>
+        ${sorted.length? sorted.map(at=>{
+          const envs = S.envios.filter(e=>e.atividadeId===at.id);
+          return `<div class="activity-item">
+            <div class="activity-head">
+              <div>
+                <div class="activity-title">${esc(at.titulo)}</div>
+                <div class="activity-meta">Publicada em ${fmtDate(at.dataPublicacao)} ${at.prazo?('· prazo '+fmtDate(at.prazo)):''} · ${envs.length} envio(s)</div>
+              </div>
+              <button class="btn-sm danger" data-del-atividade="${at.id}">Remover</button>
+            </div>
+            <div class="activity-desc">${esc(at.descricao)}</div>
+          </div>`;
+        }).join('') : `<div class="empty-note">Nenhuma atividade publicada ainda.</div>`}
+      </div>`;
+  }
+
+  function tabEnvios(){
+    if(!S.atividades.length) return `<div class="card"><div class="empty-note">Publique uma atividade para acompanhar os envios aqui.</div></div>`;
+    return S.atividades.slice().sort((a,b)=>b.dataPublicacao.localeCompare(a.dataPublicacao)).map(at=>{
+      const envs = S.envios.filter(e=>e.atividadeId===at.id);
+      return `
+      <div class="card">
+        <div class="card-title">${esc(at.titulo)}</div>
+        <div class="card-sub">${envs.length} envio(s) recebido(s)</div>
+        ${envs.length? `
+        <table>
+          <thead><tr><th>Aluno(a)</th><th>Data</th><th>Resposta</th><th>Arquivo</th></tr></thead>
+          <tbody>
+            ${envs.map(e=>{
+              const a = S.alunos.find(x=>x.id===e.alunoId);
+              return `<tr>
+                <td>${esc(a?a.nome:'—')}</td>
+                <td class="num-cell">${fmtDate(e.dataEnvio)}</td>
+                <td>${esc(e.texto||'—')}</td>
+                <td>${e.arquivoNome?`<a href="${e.arquivoDados}" download="${esc(e.arquivoNome)}" class="link-btn">${esc(e.arquivoNome)}</a>`:'—'}</td>
+              </tr>`;
+            }).join('')}
+          </tbody>
+        </table>`:`<div class="empty-note">Nenhum envio ainda para esta atividade.</div>`}
+      </div>`;
+    }).join('');
+  }
+
+  function attachTeacherHandlers(){
+    const lo = document.getElementById('btn-logout'); if(lo) lo.onclick = logout;
+    document.querySelectorAll('.nav-tab').forEach(t=>{
+      t.onclick = ()=>{ S.teacherTab = t.dataset.tt; render(); };
+    });
+
+    // alunos
+    const fna = document.getElementById('form-novo-aluno');
+    if(fna) fna.onsubmit = async (e)=>{
+      e.preventDefault();
+      const nome = document.getElementById('na-nome').value.trim();
+      const nasc = document.getElementById('na-nasc').value;
+      const turma = document.getElementById('na-turma').value.trim();
+      if(!nome||!nasc) return;
+      S.alunos.push({id:uid(), nome, dataNascimento:nasc, turma});
+      await saveAlunos();
+      showToast('Aluno(a) cadastrado(a).');
+      render();
+    };
+    document.querySelectorAll('[data-del-aluno]').forEach(btn=>{
+      btn.onclick = async ()=>{
+        if(!confirm('Remover este(a) aluno(a) e todas as suas notas e envios?')) return;
+        const id = btn.dataset.delAluno;
+        S.alunos = S.alunos.filter(a=>a.id!==id);
+        delete S.notas[id];
+        S.envios = S.envios.filter(e=>e.alunoId!==id);
+        await Promise.all([saveAlunos(), saveNotas(), saveEnvios()]);
+        showToast('Aluno(a) removido(a).');
+        render();
+      };
+    });
+
+    // notas
+    const selAluno = document.getElementById('nn-aluno');
+    if(selAluno) selAluno.onchange = ()=>{ S.selectedAlunoId = selAluno.value; render(); };
+    const fnn = document.getElementById('form-nova-nota');
+    if(fnn) fnn.onsubmit = async (e)=>{
+      e.preventDefault();
+      const alunoId = document.getElementById('nn-aluno').value;
+      const avaliacao = document.getElementById('nn-avaliacao').value.trim();
+      const nota = document.getElementById('nn-nota').value;
+      const data = document.getElementById('nn-data').value;
+      const obs = document.getElementById('nn-obs').value.trim();
+      if(!alunoId||!avaliacao||nota===''||!data) return;
+      if(!S.notas[alunoId]) S.notas[alunoId] = [];
+      S.notas[alunoId].push({id:uid(), avaliacao, nota, data, obs});
+      S.selectedAlunoId = alunoId;
+      await saveNotas();
+      showToast('Nota lançada.');
+      render();
+    };
+    document.querySelectorAll('[data-del-nota]').forEach(btn=>{
+      btn.onclick = async ()=>{
+        const alunoId = btn.dataset.aluno;
+        const notaId = btn.dataset.delNota;
+        S.notas[alunoId] = (S.notas[alunoId]||[]).filter(n=>n.id!==notaId);
+        await saveNotas();
+        showToast('Nota removida.');
+        render();
+      };
+    });
+
+    // atividades
+    const fnat = document.getElementById('form-nova-atividade');
+    if(fnat) fnat.onsubmit = async (e)=>{
+      e.preventDefault();
+      const titulo = document.getElementById('at-titulo').value.trim();
+      const descricao = document.getElementById('at-desc').value.trim();
+      const prazo = document.getElementById('at-prazo').value;
+      if(!titulo||!descricao) return;
+      S.atividades.push({id:uid(), titulo, descricao, prazo, dataPublicacao:new Date().toISOString().slice(0,10)});
+      await saveAtividades();
+      showToast('Atividade publicada.');
+      render();
+    };
+    document.querySelectorAll('[data-del-atividade]').forEach(btn=>{
+      btn.onclick = async ()=>{
+        if(!confirm('Remover esta atividade e os envios recebidos?')) return;
+        const id = btn.dataset.delAtividade;
+        S.atividades = S.atividades.filter(a=>a.id!==id);
+        S.envios = S.envios.filter(e=>e.atividadeId!==id);
+        await Promise.all([saveAtividades(), saveEnvios()]);
+        showToast('Atividade removida.');
+        render();
+      };
+    });
+  }
+
+  loadAll();
+})();
+</script>
+</body>
+</html>
